@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fund-insight-ui
+  namespace: default
+  labels:
+    app: fund-insight-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fund-insight-ui
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: fund-insight-ui
+    spec:
+      containers:
+        - name: fund-insight-ui
+          image: registry.cn-beijing.aliyuncs.com/fundwit/fund-insight-ui:sha-498d460
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+      - name: cr-aliyun
+      restartPolicy: Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: fund-insight-ui
+  name: fund-insight-ui
+  namespace: default
+spec:
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 80
+  selector:
+    app: fund-insight-ui
+  sessionAffinity: None
+  type: ClusterIP
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: fund-insight-ui
+  namespace: default
+spec:
+  tls:
+    - hosts:
+        - fund.fundwit.com
+      secretName: tls-fundwit.com
+  rules:
+    - host: fund.fundwit.com
+      http:
+        paths:
+          - backend:
+              service:
+                name: fund-insight-ui
+                port:
+                  number: 80
+            path: /
+            pathType: Prefix
