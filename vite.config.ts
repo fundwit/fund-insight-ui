@@ -9,7 +9,7 @@ export default defineConfig({
     // proxy will be an instance of 'http-proxy', Please see for further info https://github.com/http-party/node-http-proxy#options
     proxy: {
       "/api": {
-        target: "https://money.finance.sina.com.cn",
+        target: "https://fund-insight-core.fundwit.com",
         changeOrigin: true,
         secure: false,
         rewrite: path => path.replace(/^\/api/, ''),

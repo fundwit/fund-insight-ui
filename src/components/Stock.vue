@@ -17,7 +17,7 @@ import { CandlestickChart, BarChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
 import { ref, provide, onMounted } from 'vue';
 import VChart, { THEME_KEY } from 'vue-echarts';
-import sina from "../client/sina";
+import client from "../client/insight";
 
 use([
   DatasetComponent,
@@ -174,15 +174,15 @@ const option = ref({
 });
 
 onMounted(() => {
-  sina.getDataByDay(code).then(res => {
+  client.getDataByDay(code).then(res => {
     if (res.status == 200) {
       //array of item: {close: "1250.560",  day: "2020-04-24", high: "1259.890", low: "1235.180", open: "1248.000", volume: "1912240"}
-      // ['time', 'open', 'high', 'low', 'close', 'volumn', 'sign']
       let new_data = []
-      for (let d of res.data) {
-        let volumeSign = parseFloat(d.close) >= parseFloat(d.open) ? 1: -1
+      for (let d of res.data[0].series) {
+        let volumeSign = d[4] >= d[1] ? 1: -1
         new_data.push([
-          d.day, parseFloat(d.open), parseFloat(d.high), parseFloat(d.low), parseFloat(d.close), parseInt(d.volume),volumeSign
+          // ['time', 'open', 'high', 'low', 'close', 'volumn', 'sign']
+          d[0], d[1], d[2], d[3], d[4], d[5],volumeSign
         ])
       }
       option.value.dataset.source = new_data
